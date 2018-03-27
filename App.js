@@ -20,9 +20,22 @@ class SeaSpace extends React.Component {
   render() {
     let contents = null;
     
-    if (this.props.contents == Ship) {
-      console.log("Ship at " + this.props.row + ',' + this.props.col);
+    /*if (this.props.contents == Ship) {
       contents = <View style={styles.ship} />;
+    } else */
+    
+    if (this.props.contents == Wreckage) {
+      contents = (
+        <View style={styles.ship}>
+          <Text style={{fontSize: 40, fontWeight: 'bold'}}>*</Text>
+        </View>
+      );
+    } else if (this.props.contents == Miss) {
+      contents = (
+        <View>
+          <Text style={{fontSize: 40, fontWeight: 'bold'}}>x</Text>
+        </View>
+      );
     }
 
     return (
@@ -44,21 +57,21 @@ export default class App extends React.Component {
     this.startGame = this.startGame.bind(this);
     this.initializeGame = this.initializeGame.bind(this);
 
-    this.totalShips = 4;
+    this.totalShips = 6;
 
     this.initializeGame();
   }
 
   initializeGame() {
-    this.state = {shipsLeft: this.totalShips, gameWon: false};
+    this.state = {shipsLeft: this.totalShips, shots: 0, bestScore: 0, gameWon: false};
     this.startGame();
   }
 
   startGame() {
     console.log("resetting game...");
 
-    this.gameColumns = 8;
-    this.gameRows = 10;
+    this.gameColumns = 5;
+    this.gameRows = 6;
 
     console.log(this.state);
 
@@ -84,7 +97,16 @@ export default class App extends React.Component {
   }
 
   resetGame() {
-    this.setState({shipsLeft: this.totalShips, gameWon: false});
+    
+    let bestScore = this.state.bestScore;
+    
+    if (this.state.gameWon) {
+      if (bestScore == 0 || this.state.shots < bestScore) {
+        bestScore = this.state.shots;
+      }
+    }
+
+    this.setState({shipsLeft: this.totalShips, shots: 0, bestScore: bestScore, gameWon: false});
     this.startGame();
   }
 
@@ -97,14 +119,21 @@ export default class App extends React.Component {
     console.log('row=' + row + ', col=' + col);
     console.log('contents=' + this.grid[row][col]);
 
+    if (this.state.gameWon) {
+      return;
+    }
+
     let contents = this.grid[row][col];
     if (contents == Ship) {
       this.grid[row][col] = Wreckage;
       let newShipsLeft = this.state.shipsLeft - 1;
-      this.setState({shipsLeft: newShipsLeft});
+      this.setState({shipsLeft: newShipsLeft, shots: this.state.shots+1});
       if (newShipsLeft == 0) {
         this.winGame();
       }
+    } else if (contents == Empty) {
+      this.grid[row][col] = Miss;
+      this.setState({shots: this.state.shots+1});
     }
   }
 
@@ -122,17 +151,21 @@ export default class App extends React.Component {
   
   render() {
     let victoryMessage = this.state.gameWon ? <Text>You Win!</Text> : null;
-    let resetGameButton = this.state.gameWon ? <Button title='Reset Game' onPress={this.resetGame} /> : null;
+    let bestScore = this.state.bestScore > 0 ? <Text>Best Score: {this.state.bestScore}</Text> : null;
+
     console.log("Render State: ");
     console.log(this.state);
     return (
       <View style={styles.container}>
-        <View style={{height: '5%', width: '50%', backgroundColor: 'black'}} />
-        <View style={{height: '10%', backgroundColor: 'green', justifyContent: 'flex-end'}}>
+        
+        <View style={{height: '15%', width: '80%', backgroundColor: 'green', alignItems: 'center', justifyContent: 'flex-end'}}>
           <Text>Battleship!</Text>
+          {bestScore}
+          <Text>Shots: {this.state.shots}</Text>
           {victoryMessage}
-          {resetGameButton}
         </View>
+
+        <Button title='Reset Game' onPress={this.resetGame} />
         
         <View style={{width: '90%', aspectRatio: 0.8, padding: '1%', backgroundColor: 'yellow'}}>
           <View style={styles.ocean}>
@@ -158,11 +191,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    alignContent: 'center'
+    alignContent: 'center',
+    justifyContent: 'center'
   },
   seaSpace: {
     margin: '0.5%',
-    width: '11.5%',
+    width: '18.5%',
     aspectRatio: 1,
     backgroundColor: 'blue',
     alignItems: 'center',
@@ -171,6 +205,8 @@ const styles = StyleSheet.create({
   ship: {
     width: '80%',
     height: '80%',
-    backgroundColor: 'grey'
+    backgroundColor: 'grey',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });
