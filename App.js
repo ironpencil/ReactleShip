@@ -6,6 +6,32 @@ const Ship = 1;
 const Wreckage = 2;
 const Miss = 3;
 
+class EmptySpace extends React.Component {
+  render() {
+    return <View style={styles.seaSpace}></View>;
+  }
+}
+
+class WreckageSpace extends React.Component {
+  render() {
+    return (
+      <View style={styles.ship}>
+        <Text style={{fontSize: 40, fontWeight: 'bold'}}>*</Text>
+      </View>
+    );
+  }
+}
+
+class MissSpace extends React.Component {
+  render() {
+    return (
+      <View>
+          <Text style={{fontSize: 40, fontWeight: 'bold'}}>x</Text>
+      </View>
+    );
+  }
+}
+
 class SeaSpace extends React.Component {
   constructor(props) {
     super(props);
@@ -25,17 +51,11 @@ class SeaSpace extends React.Component {
     } else */
     
     if (this.props.contents == Wreckage) {
-      contents = (
-        <View style={styles.ship}>
-          <Text style={{fontSize: 40, fontWeight: 'bold'}}>*</Text>
-        </View>
-      );
+      contents = <WreckageSpace />;
     } else if (this.props.contents == Miss) {
-      contents = (
-        <View>
-          <Text style={{fontSize: 40, fontWeight: 'bold'}}>x</Text>
-        </View>
-      );
+      contents = <MissSpace />;
+    } else {
+      contents = <EmptySpace />;
     }
 
     return (
